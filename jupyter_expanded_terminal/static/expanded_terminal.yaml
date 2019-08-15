@@ -1,0 +1,19 @@
+Type: IPython Notebook Extension
+Name: Expanded Terminal
+Section: common
+Main: main.js
+Link: README.md
+Description: Make the terminal more convenient to use, need corresponding service-side extension
+Parameters:
+- name: expanded_terminal_custom_name
+  description: Create new termin with custom name
+  input_type: checkbox
+  default: true
+- name: expanded_terminal_switch_cwd
+  description: Auto switch working directory of new terminal to the current tree path 
+  input_type: checkbox
+  default: true
+- name: expanded_terminal_startup_command
+  description: The commands to run in the new terminal after startup
+  input_type: list
+  default: [""]
