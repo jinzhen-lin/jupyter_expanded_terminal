@@ -7,7 +7,7 @@ with open("README.md") as f:
 
 setup(
     name="jupyter_expanded_terminal",
-    version="1.0.1",
+    version="1.0.2",
     include_package_data=True,
     description="A Jupyter Extension to expand terminal",
     long_description=readme,

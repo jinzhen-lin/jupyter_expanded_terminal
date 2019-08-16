@@ -23,7 +23,7 @@ except ImportError:
     prometheus_avaliable = False
 
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 
 def _jupyter_server_extension_paths():
@@ -76,7 +76,9 @@ class APITerminalRootHandler(api_handlers.TerminalRootHandler):
             startup_command = []
         startup_command = [str(x).strip() for x in startup_command]
         startup_command = [x for x in startup_command if x]
-        startup_command = "\r\n".join(startup_command) + "\r\n"
+        startup_command = "\r\n".join(startup_command)
+        if startup_command:
+            startup_command += "\r\n"
 
         if any([term_name == name for term_name in tm.terminals]):
             raise web.HTTPError(409, "Terminal already exists")
@@ -167,7 +169,7 @@ def initialize(webapp, notebook_dir, connection_url, settings):
 
 
 def load_jupyter_server_extension(jupyter_app):
-    if not jupyter_app.terminals_enabled:
+    if "terminals_enabled" in jupyter_app.__dict__ and not jupyter_app.terminals_enabled:
         return
 
     web_app = jupyter_app.web_app
