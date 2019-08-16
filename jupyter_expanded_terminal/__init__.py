@@ -9,7 +9,6 @@ import terminado
 import tornado
 from ipython_genutils.py3compat import which
 from notebook.base.handlers import IPythonHandler
-from notebook.prometheus.metrics import TERMINAL_CURRENTLY_RUNNING_TOTAL
 from notebook.terminal import api_handlers
 from notebook.terminal.handlers import TerminalHandler, TermSocket
 from notebook.utils import url_path_join as ujoin
@@ -17,7 +16,14 @@ from terminado import NamedTermManager
 from tornado import web
 from tornado.log import app_log
 
-__version__ = "1.0.0"
+try:
+    from notebook.prometheus.metrics import TERMINAL_CURRENTLY_RUNNING_TOTAL
+    prometheus_avaliable = True
+except ImportError:
+    prometheus_avaliable = False
+
+
+__version__ = "1.0.1"
 
 
 def _jupyter_server_extension_paths():
@@ -84,9 +90,10 @@ class APITerminalRootHandler(api_handlers.TerminalRootHandler):
                 term.ptyproc.write(startup_command)
             tm.term_settings["cwd"] = None
             self.finish(json.dumps({"name": name}))
-
-        # Increase the metric by one because a new terminal was created
-        TERMINAL_CURRENTLY_RUNNING_TOTAL.inc()
+        
+        if prometheus_avaliable:
+            # Increase the metric by one because a new terminal was created
+            TERMINAL_CURRENTLY_RUNNING_TOTAL.inc()
 
 
 class APITerminalHandler(api_handlers.TerminalHandler):
