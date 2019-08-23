@@ -9,7 +9,8 @@ import terminado
 import tornado
 from ipython_genutils.py3compat import which
 from notebook.base.handlers import IPythonHandler
-from notebook.terminal import api_handlers, handlers
+from notebook.terminal import api_handlers
+from notebook.terminal import handlers as term_handlers
 from notebook.utils import url_path_join as ujoin
 from terminado import NamedTermManager
 from tornado import web
@@ -22,7 +23,7 @@ except ImportError:
     prometheus_avaliable = False
 
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 
 def _jupyter_server_extension_paths():
@@ -47,7 +48,7 @@ class TerminalExtensionHandler(IPythonHandler):
         self.finish(json.dumps({"version": __version__}))
 
 
-class TerminalHandler(handlers.TerminalHandler):
+class TerminalHandler(term_handlers.TerminalHandler):
 
     @web.authenticated
     def get(self, term_name):
@@ -156,15 +157,15 @@ def initialize(webapp, notebook_dir, connection_url, settings):
     )
     terminal_manager.log = app_log
     base_url = webapp.settings["base_url"]
-    handlers = [
+    new_handlers = [
         (ujoin(base_url, r"/terminals/([^/]+)"), TerminalHandler),
-        (ujoin(base_url, r"/terminals/websocket/([^/]+)"), handlers.TermSocket,
+        (ujoin(base_url, r"/terminals/websocket/([^/]+)"), term_handlers.TermSocket,
          {"term_manager": terminal_manager}),
         (ujoin(base_url, r"/api/terminals"), APITerminalRootHandler),
         (ujoin(base_url, r"/api/terminals/([^/]+)"), APITerminalHandler),
         (ujoin(base_url, r"/terminal_extension"), TerminalExtensionHandler),
     ]
-    webapp.add_handlers(".*$", handlers)
+    webapp.add_handlers(".*$", new_handlers)
 
 
 def load_jupyter_server_extension(jupyter_app):
