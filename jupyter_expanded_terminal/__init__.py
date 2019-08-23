@@ -9,8 +9,7 @@ import terminado
 import tornado
 from ipython_genutils.py3compat import which
 from notebook.base.handlers import IPythonHandler
-from notebook.terminal import api_handlers
-from notebook.terminal.handlers import TerminalHandler, TermSocket
+from notebook.terminal import api_handlers, handlers
 from notebook.utils import url_path_join as ujoin
 from terminado import NamedTermManager
 from tornado import web
@@ -48,7 +47,7 @@ class TerminalExtensionHandler(IPythonHandler):
         self.finish(json.dumps({"version": __version__}))
 
 
-class TerminalHandler(TerminalHandler):
+class TerminalHandler(handlers.TerminalHandler):
 
     @web.authenticated
     def get(self, term_name):
@@ -73,12 +72,12 @@ class APITerminalRootHandler(api_handlers.TerminalRootHandler):
         # the command to run in the new terminal after startup
         startup_command = dat.get("startup_command", [])
         if not isinstance(startup_command, list):
-            startup_command = []
+            startup_command = [startup_command]
         startup_command = [str(x).strip() for x in startup_command]
         startup_command = [x for x in startup_command if x]
-        startup_command = "\r\n".join(startup_command)
+        startup_command = "\r".join(startup_command)
         if startup_command:
-            startup_command += "\r\n"
+            startup_command += "\r"
 
         if any([term_name == name for term_name in tm.terminals]):
             raise web.HTTPError(409, "Terminal already exists")
@@ -92,7 +91,7 @@ class APITerminalRootHandler(api_handlers.TerminalRootHandler):
                 term.ptyproc.write(startup_command)
             tm.term_settings["cwd"] = None
             self.finish(json.dumps({"name": name}))
-        
+
         if prometheus_avaliable:
             # Increase the metric by one because a new terminal was created
             TERMINAL_CURRENTLY_RUNNING_TOTAL.inc()
@@ -159,7 +158,7 @@ def initialize(webapp, notebook_dir, connection_url, settings):
     base_url = webapp.settings["base_url"]
     handlers = [
         (ujoin(base_url, r"/terminals/([^/]+)"), TerminalHandler),
-        (ujoin(base_url, r"/terminals/websocket/([^/]+)"), TermSocket,
+        (ujoin(base_url, r"/terminals/websocket/([^/]+)"), handlers.TermSocket,
          {"term_manager": terminal_manager}),
         (ujoin(base_url, r"/api/terminals"), APITerminalRootHandler),
         (ujoin(base_url, r"/api/terminals/([^/]+)"), APITerminalHandler),
