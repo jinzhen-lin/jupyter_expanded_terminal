@@ -107,7 +107,8 @@ class APITerminalHandler(api_handlers.TerminalHandler):
         tm = self.terminal_manager
         if name in tm.terminals:
             # the new terminal name to be used
-            new_name = self.get_argument("new_name", "").strip()
+            dat = tornado.escape.json_decode(self.request.body)
+            new_name = self.get("new_name", "").strip()
             if not new_name or new_name == name:
                 return self.finish(json.dumps({"name": name}))
             if any([term_name == new_name for term_name in tm.terminals]):
