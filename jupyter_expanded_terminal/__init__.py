@@ -23,7 +23,7 @@ except ImportError:
     prometheus_avaliable = False
 
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 
 
 def _jupyter_server_extension_paths():
@@ -108,7 +108,7 @@ class APITerminalHandler(api_handlers.TerminalHandler):
         if name in tm.terminals:
             # the new terminal name to be used
             dat = tornado.escape.json_decode(self.request.body)
-            new_name = self.get("new_name", "").strip()
+            new_name = dat.get("new_name", "").strip()
             if not new_name or new_name == name:
                 return self.finish(json.dumps({"name": name}))
             if any([term_name == new_name for term_name in tm.terminals]):
