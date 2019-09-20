@@ -23,7 +23,7 @@ except ImportError:
     prometheus_avaliable = False
 
 
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 
 
 def _jupyter_server_extension_paths():
